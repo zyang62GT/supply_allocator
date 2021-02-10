@@ -150,7 +150,7 @@ public class MainController {
 
     @PostMapping(value = "/deleteplans")
     public String deletePlans () {
-        planService.setPlans(new ArrayList<>());
+        planService.setPlans(null);
         planRepository.deleteAll();
         return "uploadForm";
     }
