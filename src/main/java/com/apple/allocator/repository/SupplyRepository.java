@@ -24,4 +24,8 @@ public interface SupplyRepository extends JpaRepository<Supply, Integer> {
     nativeQuery = true)
     void updateSupplyQuantityBySiteProductAndDate(BigInteger quantity, String site,
                                                      String product, java.sql.Date date);
+
+    @Query(value = "select count(*) from supply where quantity != 0",
+            nativeQuery = true)
+    Integer getNonZeroSupplySize();
 }

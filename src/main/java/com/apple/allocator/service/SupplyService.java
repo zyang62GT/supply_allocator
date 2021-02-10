@@ -45,6 +45,10 @@ public class SupplyService {
         supplyRepository.updateSupplyQuantityBySiteProductAndDate(quantity, site, product, date);
     };
 
+    public Integer getNonZeroSupplySize(){
+        return supplyRepository.getNonZeroSupplySize();
+    }
+
 
 
     public List<Supply> getAllSupplies() {

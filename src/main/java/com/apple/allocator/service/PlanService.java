@@ -45,7 +45,8 @@ public class PlanService {
 
     public void allocate() {
         int count = 0;
-        while (demandOrderService.getNonZeroDemandOrderSize() > 0) {
+        int loopCount = 0;
+        while (demandOrderService.getNonZeroDemandOrderSize() > 0 && supplyService.getNonZeroSupplySize() > 0) {
             System.out.println("demandOrderService.getNonZeroDemandOrderSize(): " + demandOrderService.getNonZeroDemandOrderSize());
             Iterable<DemandOrder> oldestOrders = demandOrderService.getOldestDemandOrders();
 
@@ -55,17 +56,17 @@ public class PlanService {
                 String currentProduct = demandOrder.getProduct();
                 java.sql.Date currentDate = demandOrder.getDate();
                 BigInteger currentQuantity = demandOrder.getQuantity();
-                if (currentCustomer.equals(lastCustomer)) {
-                    count++;
-                }
-                if (count > 1) {
-                    // if same customer 3 times in a row, push the customer's date back by one day
-                    count = 0;
-                    java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
-                    demandOrderService.updateDemandOrderDateBySiteProductAndQuantity(nextDate, currentCustomer,
-                            currentProduct,currentQuantity);
-                    continue;
-                }
+//                if (currentCustomer.equals(lastCustomer)) {
+////                    count++;
+////                }
+////                if (count > 1) {
+////                    // if same customer 3 times in a row, push the customer's date back by one day
+////                    count = 0;
+////                    java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
+////                    demandOrderService.updateDemandOrderDateBySiteProductAndQuantity(nextDate, currentCustomer,
+////                            currentProduct,currentQuantity);
+////                    continue;
+////                }
 
                 Iterable<String> sites = sourcingRuleService.findSitesByCustomerAndProduct(currentCustomer,
                         currentProduct);
@@ -74,7 +75,14 @@ public class PlanService {
                     String site = (String) iter.next();
                     Iterable<Supply> supplies = supplyService.getOldestSupplyBySiteAndProduct(site, currentProduct);
                     if (supplies == null && ! iter.hasNext()) {
-                        return;
+                        java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
+                        demandOrderService.updateDemandOrderDateBySiteProductAndQuantity(nextDate, currentCustomer,
+                            currentProduct,currentQuantity);
+                        loopCount++;
+                        if (loopCount > 50) {
+                            return;
+                        }
+                        break;
                     }
                     if (supplies == null) {
                         continue;
