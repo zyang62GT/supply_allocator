@@ -1,0 +1,36 @@
+<!DOCTYPE html >
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Plans</title>
+</head>
+<body>
+<h2>Plans</h2>
+<form action="/">
+    <input type="submit" value="Go Back" />
+</form>
+<form action="/deleteplans" method="post">
+    <input type="submit" value="Delete Table" />
+</form>
+<form action="/api/csv/downloadplan" method="get">
+    <input type="submit" value="Download Table" />
+</form>
+<table border="1">
+    <tr>
+        <th>date</th>
+        <th>customer</th>
+        <th>product</th>
+        <th>site</th>
+        <th>quantity</th>
+    </tr>
+    <tr th:each = "plan: ${plans}">
+        <td th:text="${plan.date}">product_date</td>
+        <td th:text="${plan.customer}">customer_name</td>
+        <td th:text="${plan.product}">product_name</td>
+        <td th:text="${plan.site}">product_site</td>
+        <td th:text="${plan.quantity}">product_quantity</td>
+    </tr>
+</table>
+
+</body>
+</html>

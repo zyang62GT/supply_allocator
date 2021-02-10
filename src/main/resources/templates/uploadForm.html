@@ -1,0 +1,63 @@
+<html xmlns:th="https://www.thymeleaf.org">
+<body>
+
+<div>
+    <h2>1. Upload CSV Forms (Date need to be in yyyy/mm/dd format)</h2>
+</div>
+
+<div>
+    <form method="POST" enctype="multipart/form-data" action="/api/csv/uploadSourcingRule">
+        <table>
+            <tr><td>Sourcing Rule File to upload:</td><td><input type="file" name="file" /></td></tr>
+            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+        </table>
+    </form>
+</div>
+
+<div>
+    <form method="POST" enctype="multipart/form-data" action="/api/csv/uploadDemandOrder">
+        <table>
+            <tr><td>Demand Order File to upload:</td><td><input type="file" name="file" /></td></tr>
+            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+        </table>
+    </form>
+</div>
+
+<div>
+    <form method="POST" enctype="multipart/form-data" action="/api/csv/uploadSupply">
+        <table>
+            <tr><td>Supply File to upload:</td><td><input type="file" name="file" /></td></tr>
+            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
+        </table>
+    </form>
+</div>
+
+<div>
+    <h2>2. Show uploaded CSV Forms</h2>
+</div>
+
+<div>
+    <form action="/showrules" method="GET">
+        <input type="submit" value="show rules" />
+    </form>
+    <form action="/showdemands" method="GET">
+        <input type="submit" value="show demands" />
+    </form>
+    <form action="/showsupplies" method="GET">
+        <input type="submit" value="show supplies" />
+    </form>
+
+</div>
+
+<div>
+    <h2>3. Get order execution plan</h2>
+</div>
+
+<div>
+    <form action="/showplans" method="GET">
+        <input type="submit" value="get plan" />
+    </form>
+</div>
+
+</body>
+</html>

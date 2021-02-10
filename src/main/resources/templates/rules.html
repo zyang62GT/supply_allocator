@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Rules</title>
+</head>
+<body>
+<h2>Rules</h2>
+<form action="/">
+    <input type="submit" value="Go Back" />
+</form>
+<form action="/deleterules" method="post">
+    <input type="submit" value="Delete Table" />
+</form>
+<table border="1">
+    <tr>
+        <th>customer</th>
+        <th>product</th>
+        <th>site</th>
+    </tr>
+    <tr th:each = "rule: ${rules}">
+        <td th:text="${rule.customer}">customer_name</td>
+        <td th:text="${rule.product}">product_name</td>
+        <td th:text="${rule.site}">product_quantity</td>
+    </tr>
+</table>
+
+</body>
+</html>
