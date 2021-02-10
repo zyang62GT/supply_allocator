@@ -31,7 +31,6 @@ public class CSVHelper {
     static String[] HEADERs = { "Id", "Title", "Description", "Published" };
 
     public static boolean hasCSVFormat(MultipartFile file) {
-        System.out.println("aaaaaaaaaaaaaaaa" + file.getContentType());
 
         if (!TYPE.equals(file.getContentType())) {
             return false;
@@ -76,7 +75,6 @@ public class CSVHelper {
 
             for (CSVRecord csvRecord : csvRecords) {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd");
-                System.out.println("bbbbbbbbbbbbbbbbbbb" + csvRecord.get("date"));
                 Date parsed = format.parse(csvRecord.get("date"));
                 java.sql.Date date = new java.sql.Date(parsed.getTime());
 

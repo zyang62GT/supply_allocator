@@ -30,7 +30,12 @@ public interface DemandOrderRepository extends JpaRepository<DemandOrder, Intege
     void updateDemandOrderQuantityBySiteProductAndDate(BigInteger quantity, String customer,
                                                   String product, java.sql.Date date);
 
-
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "update demand_order set date = ?1 where customer = ?2 and product = ?3 and quantity = ?4",
+            nativeQuery = true)
+    void updateDemandOrderDateBySiteProductAndQuantity(java.sql.Date date, String customer,
+                                                       String product, BigInteger quantity);
 
 
 

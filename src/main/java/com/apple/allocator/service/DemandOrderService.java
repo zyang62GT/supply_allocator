@@ -2,9 +2,7 @@ package com.apple.allocator.service;
 
 import com.apple.allocator.helper.CSVHelper;
 import com.apple.allocator.model.DemandOrder;
-import com.apple.allocator.model.SourcingRule;
 import com.apple.allocator.repository.DemandOrderRepository;
-import com.apple.allocator.repository.SourcingRuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +40,11 @@ public class DemandOrderService {
     public void updateDemandOrderQuantityBySiteProductAndDate(BigInteger quantity, String customer,
                                                        String product, java.sql.Date date){
         demandOrderRepository.updateDemandOrderQuantityBySiteProductAndDate(quantity, customer, product, date);
+    }
+
+    public void updateDemandOrderDateBySiteProductAndQuantity(java.sql.Date date, String customer,
+                                                              String product, BigInteger quantity){
+        demandOrderRepository.updateDemandOrderDateBySiteProductAndQuantity(date, customer, product, quantity);
     }
 
     public int getNonZeroDemandOrderSize() {
