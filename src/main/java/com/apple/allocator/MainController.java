@@ -4,12 +4,10 @@ import com.apple.allocator.model.DemandOrder;
 import com.apple.allocator.model.Plan;
 import com.apple.allocator.model.SourcingRule;
 import com.apple.allocator.model.Supply;
-import com.apple.allocator.repository.DemandOrderRepository;
-import com.apple.allocator.repository.PlanRepository;
-import com.apple.allocator.repository.SourcingRuleRepository;
-import com.apple.allocator.repository.SupplyRepository;
+import com.apple.allocator.repository.*;
 import com.apple.allocator.service.DemandOrderService;
 import com.apple.allocator.service.PlanService;
+import com.apple.allocator.service.UnsatisfiedOrderService;
 import com.apple.allocator.storage.StorageFileNotFoundException;
 import com.apple.allocator.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +47,12 @@ public class MainController {
     @Autowired
     private PlanService planService;
 
+    @Autowired
+    private UnsatisfiedOrderService unsatisfiedOrderService;
+
+    @Autowired
+    private UnsatisfiedOrderRepository unsatisfiedOrderRepository;
+
     private final StorageService storageService;
 
 
@@ -74,8 +78,6 @@ public class MainController {
     public @ResponseBody
     List<Plan> getAllSourcingRules(){
         planService.allocate();
-
-        planRepository.saveAll(planService.getPlans());
         return planService.getPlans();
     }
 
@@ -118,11 +120,20 @@ public class MainController {
     public String showPlans(Model md){
         if (planService.getPlans().isEmpty()) {
             planService.allocate();
-            planRepository.saveAll(planService.getPlans());
         }
         md.addAttribute("plans", planService.getPlans());
         return "plans";
     }
+
+//    @RequestMapping(value = "/showunsatisfied", method = RequestMethod.GET)
+//    public String showUnsatisfiedOrders(Model md){
+//        if (unsatisfiedOrderService.getUnsatisfiedOrders().isEmpty()) {
+//            unsatisfiedOrderRepository.saveAll(unsatisfiedOrderService.getUnsatisfiedOrders());
+//        }
+//
+//        md.addAttribute("plans", planService.getPlans());
+//        return "plans";
+//    }
 
     @RequestMapping(value = "/showrules", method = RequestMethod.GET)
     public String showRules(Model md){

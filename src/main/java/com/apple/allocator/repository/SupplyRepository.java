@@ -28,4 +28,15 @@ public interface SupplyRepository extends JpaRepository<Supply, Integer> {
     @Query(value = "select count(*) from supply where quantity != 0",
             nativeQuery = true)
     Integer getNonZeroSupplySize();
+
+    @Query(value = "select id from supply where quantity = ?1 and site = ?2 and product = ?3 and date = ?4 limit 1",
+            nativeQuery = true)
+    Iterable<Integer> getIdByQuantitySiteProductAndDate(BigInteger quantity, String site,
+                                                            String product, java.sql.Date date);
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "update supply set quantity = ?1 where id = ?2",
+            nativeQuery = true)
+    void updateSupplyQuantityById(BigInteger quantity, Integer id);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -45,11 +46,20 @@ public class SupplyService {
         supplyRepository.updateSupplyQuantityBySiteProductAndDate(quantity, site, product, date);
     };
 
-    public Integer getNonZeroSupplySize(){
+    public int getNonZeroSupplySize(){
         return supplyRepository.getNonZeroSupplySize();
     }
 
+    public int getIdByQuantitySiteProductAndDate(BigInteger quantity, String site,
+                                                 String product, java.sql.Date date){
+        Iterable<Integer> ids = supplyRepository.getIdByQuantitySiteProductAndDate(quantity, site, product, date);
+        Iterator<Integer> iter = ids.iterator();
+        return iter.next();
+    }
 
+    public void updateSupplyQuantityById(BigInteger quantity, Integer id){
+        supplyRepository.updateSupplyQuantityById(quantity, id);
+    }
 
     public List<Supply> getAllSupplies() {
         return supplyRepository.findAll();

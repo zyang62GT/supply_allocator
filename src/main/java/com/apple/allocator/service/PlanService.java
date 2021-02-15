@@ -4,7 +4,9 @@ import com.apple.allocator.helper.CSVHelper;
 import com.apple.allocator.model.DemandOrder;
 import com.apple.allocator.model.Plan;
 import com.apple.allocator.model.Supply;
+import com.apple.allocator.model.UnsatisfiedOrder;
 import com.apple.allocator.repository.PlanRepository;
+import com.apple.allocator.repository.UnsatisfiedOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +33,9 @@ public class PlanService {
     }
 
     private List<Plan> plans = new ArrayList<>();
+    private List<UnsatisfiedOrder> unsatisfiedOrders = new ArrayList<>();
     private String lastCustomer;
+    private String lastProduct;
 
     @Autowired
     SourcingRuleService sourcingRuleService;
@@ -42,10 +46,12 @@ public class PlanService {
     @Autowired
     SupplyService supplyService;
 
+    @Autowired
+    UnsatisfiedOrderRepository unsatisfiedOrderRepository;
+
 
     public void allocate() {
         int count = 0;
-        int loopCount = 0;
         while (demandOrderService.getNonZeroDemandOrderSize() > 0 && supplyService.getNonZeroSupplySize() > 0) {
             System.out.println("demandOrderService.getNonZeroDemandOrderSize(): " + demandOrderService.getNonZeroDemandOrderSize());
             Iterable<DemandOrder> oldestOrders = demandOrderService.getOldestDemandOrders();
@@ -56,18 +62,21 @@ public class PlanService {
                 String currentProduct = demandOrder.getProduct();
                 java.sql.Date currentDate = demandOrder.getDate();
                 BigInteger currentQuantity = demandOrder.getQuantity();
-//                if (currentCustomer.equals(lastCustomer)) {
-////                    count++;
-////                }
-////                if (count > 1) {
-////                    // if same customer 3 times in a row, push the customer's date back by one day
-////                    count = 0;
-////                    java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
-////                    demandOrderService.updateDemandOrderDateBySiteProductAndQuantity(nextDate, currentCustomer,
-////                            currentProduct,currentQuantity);
-////                    continue;
-////                }
-
+                int orderId = demandOrderService.getIdByQuantityCustomerProductAndDate(currentQuantity,currentCustomer,
+                        currentProduct,currentDate);
+                if (count > 2) {
+                    // if same customer 3 times in a row, push the customer's date back by 3 days
+                    count = 0;
+                    java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 3*24*60*60*1000);
+                    currentDate = nextDate;
+                    demandOrderService.updateDemandOrderDateById(nextDate, orderId);
+                    break;
+                }
+                if (currentCustomer.equals(lastCustomer)) {
+                    count++;
+                } else {
+                    count = 0;
+                }
                 Iterable<String> sites = sourcingRuleService.findSitesByCustomerAndProduct(currentCustomer,
                         currentProduct);
                 Iterator iter = sites.iterator();
@@ -76,33 +85,33 @@ public class PlanService {
                     Iterable<Supply> supplies = supplyService.getOldestSupplyBySiteAndProduct(site, currentProduct);
                     if (supplies == null && ! iter.hasNext()) {
                         java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
-                        demandOrderService.updateDemandOrderDateBySiteProductAndQuantity(nextDate, currentCustomer,
-                            currentProduct,currentQuantity);
-                        loopCount++;
-                        if (loopCount > 50) {
-                            return;
-                        }
+                        unsatisfiedOrders.add(new UnsatisfiedOrder(currentCustomer, currentProduct,
+                                currentDate, currentQuantity));
+                        demandOrderService.updateDemandOrderQuantityById(BigInteger.ZERO, orderId);
                         break;
                     }
                     if (supplies == null) {
                         continue;
                     }
                     for (Supply supply : supplies) {
-                        if (currentQuantity.compareTo(BigInteger.ZERO) == 0) {
+                        if (supply.getQuantity().equals(BigInteger.ZERO)) {
                             continue;
-                        } else if (currentQuantity.compareTo(supply.getQuantity()) > 0) {
+                        }
+                        if (currentQuantity.equals(BigInteger.ZERO)) {
+                            break;
+                        }
+                        int supplyId = supplyService.getIdByQuantitySiteProductAndDate(supply.getQuantity(), supply.getSite(),
+                                supply.getProduct(), supply.getDate());
+                        if (currentQuantity.compareTo(supply.getQuantity()) > 0) {
                             System.out.println("currentQuantity: " + currentQuantity + ", supply.getQuantity: " + supply.getQuantity());
                             currentQuantity = currentQuantity.subtract(supply.getQuantity());
                             // if customer quantity > supply quantity
                             // customer quantity = customer quantity - supply quantity
                             // add new plan where quantity = supply quantity, and supply quantity becomes 0
-                            supplyService.updateSupplyQuantityBySiteProductAndDate(BigInteger.ZERO, site, currentProduct,
-                                    supply.getDate());
-                            System.out.println("Supply quantity = 0 at site: " + site + ", product: " + currentProduct + ", date: " + supply.getDate());
-                            demandOrderService.updateDemandOrderQuantityBySiteProductAndDate(currentQuantity,
-                                    currentCustomer, currentProduct, currentDate);
-                            System.out.println("demand order quantity = " + currentQuantity + " customer: " + currentCustomer + ", product: " + currentProduct + ", date: " + currentDate);
+                            supplyService.updateSupplyQuantityById(BigInteger.ZERO, supplyId);
+                            demandOrderService.updateDemandOrderQuantityById(currentQuantity, orderId);
                             plans.add(new Plan(site, currentCustomer, currentProduct, supply.getDate(), supply.getQuantity()));
+                            supply.setQuantity(BigInteger.ZERO);
                             lastCustomer = currentCustomer;
                         } else {
                             System.out.println("currentQuantity: " + currentQuantity + ", supply.getQuantity: " + supply.getQuantity());
@@ -110,20 +119,19 @@ public class PlanService {
                             // if customer quantity <= supply quantity
                             // supply quantity = supply quantity - customer quantity
                             // add new plan where quantity = customer quantity, and customer quantity becomes 0
-                            demandOrderService.updateDemandOrderQuantityBySiteProductAndDate(BigInteger.ZERO,
-                                    currentCustomer, currentProduct, currentDate);
-                            System.out.println("demand order quantity = 0,  customer: " + currentCustomer + ", product: " + currentProduct + ", date: " + currentDate);
-                            supplyService.updateSupplyQuantityBySiteProductAndDate(newSupplyQuantity, site, currentProduct,
-                                    supply.getDate());
-                            System.out.println("Supply quantity = " + newSupplyQuantity + " at site: " + site + ", product: " + currentProduct + ", date: " + supply.getDate());
+                            demandOrderService.updateDemandOrderQuantityById(BigInteger.ZERO, orderId);
+                            supplyService.updateSupplyQuantityById(newSupplyQuantity, supplyId);
                             plans.add(new Plan(site, currentCustomer, currentProduct, supply.getDate(), currentQuantity));
                             currentQuantity = BigInteger.ZERO;
+                            supply.setQuantity(newSupplyQuantity);
                             lastCustomer = currentCustomer;
                         }
                     }
                 }
             }
         }
+        planRepository.saveAll(plans);
+        unsatisfiedOrderRepository.saveAll(unsatisfiedOrders);
     }
 
     public void insertPlanEntry(BigInteger quantity, String site, String customer,

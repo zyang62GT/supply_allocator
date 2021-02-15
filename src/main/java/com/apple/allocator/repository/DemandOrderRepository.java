@@ -23,6 +23,11 @@ public interface DemandOrderRepository extends JpaRepository<DemandOrder, Intege
             nativeQuery = true)
     Integer getNonZeroDemandOrderSize();
 
+    @Query(value = "select id from demand_order where quantity = ?1 and customer = ?2 and product = ?3 and date = ?4 limit 1",
+            nativeQuery = true)
+    Iterable<Integer> getIdByQuantityCustomerProductAndDate(BigInteger quantity, String customer,
+                                                  String product, java.sql.Date date);
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "update demand_order set quantity = ?1 where customer = ?2 and product = ?3 and date = ?4",
@@ -32,10 +37,25 @@ public interface DemandOrderRepository extends JpaRepository<DemandOrder, Intege
 
     @Modifying(clearAutomatically = true)
     @Transactional
+    @Query(value = "update demand_order set quantity = ?1 where id = ?2",
+            nativeQuery = true)
+    void updateDemandOrderQuantityById(BigInteger quantity, Integer id);
+
+
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
     @Query(value = "update demand_order set date = ?1 where customer = ?2 and product = ?3 and quantity = ?4",
             nativeQuery = true)
     void updateDemandOrderDateBySiteProductAndQuantity(java.sql.Date date, String customer,
                                                        String product, BigInteger quantity);
+
+
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = "update demand_order set date = ?1 where id = ?2",
+            nativeQuery = true)
+    void updateDemandOrderDateById(java.sql.Date date, Integer id);
 
 
 

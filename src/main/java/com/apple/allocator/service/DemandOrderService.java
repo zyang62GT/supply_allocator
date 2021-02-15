@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.Date;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -51,6 +52,21 @@ public class DemandOrderService {
         return demandOrderRepository.getNonZeroDemandOrderSize();
     }
 
+    public int getIdByQuantityCustomerProductAndDate(BigInteger quantity, String customer,
+                                                            String product, java.sql.Date date){
+        Iterable<Integer> ids = demandOrderRepository.getIdByQuantityCustomerProductAndDate(quantity, customer,
+                product, date);
+        Iterator<Integer> iter = ids.iterator();
+        return iter.next();
+    }
+
+    public void updateDemandOrderQuantityById(BigInteger quantity, Integer id){
+        demandOrderRepository.updateDemandOrderQuantityById(quantity, id);
+    }
+
+    public void updateDemandOrderDateById(java.sql.Date date, Integer id){
+        demandOrderRepository.updateDemandOrderDateById(date, id);
+    }
 
     public List<DemandOrder> getAllDemandOrders() {
         return demandOrderRepository.findAll();
