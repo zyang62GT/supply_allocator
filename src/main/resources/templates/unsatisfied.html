@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Unsatisfied Demands</title>
+</head>
+<body>
+<h2>Unsatisfied Demands</h2>
+<form action="/">
+    <input type="submit" value="Go Back" />
+</form>
+<form action="/deleteunsatisfied" method="post">
+    <input type="submit" value="Delete Table" />
+</form>
+<table border="1">
+    <tr>
+        <th>customer</th>
+        <th>product</th>
+        <th>quantity</th>
+        <th>date</th>
+    </tr>
+    <tr th:each = "demand: ${unsatisfied}">
+        <td th:text="${demand.customer}">customer_name</td>
+        <td th:text="${demand.product}">product_name</td>
+        <td th:text="${demand.quantity}">product_quantity</td>
+        <td th:text="${demand.date}">product_date</td>
+    </tr>
+</table>
+</body>
+</html>

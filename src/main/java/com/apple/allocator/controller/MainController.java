@@ -1,9 +1,7 @@
-package com.apple.allocator;
+package com.apple.allocator.controller;
 
-import com.apple.allocator.model.DemandOrder;
 import com.apple.allocator.model.Plan;
 import com.apple.allocator.model.SourcingRule;
-import com.apple.allocator.model.Supply;
 import com.apple.allocator.repository.*;
 import com.apple.allocator.service.DemandOrderService;
 import com.apple.allocator.service.PlanService;
@@ -125,16 +123,6 @@ public class MainController {
         return "plans";
     }
 
-//    @RequestMapping(value = "/showunsatisfied", method = RequestMethod.GET)
-//    public String showUnsatisfiedOrders(Model md){
-//        if (unsatisfiedOrderService.getUnsatisfiedOrders().isEmpty()) {
-//            unsatisfiedOrderRepository.saveAll(unsatisfiedOrderService.getUnsatisfiedOrders());
-//        }
-//
-//        md.addAttribute("plans", planService.getPlans());
-//        return "plans";
-//    }
-
     @RequestMapping(value = "/showrules", method = RequestMethod.GET)
     public String showRules(Model md){
         md.addAttribute("rules", sourcingRuleRepository.findAll());
@@ -172,9 +160,21 @@ public class MainController {
         return "supplies";
     }
 
+    @RequestMapping(value = "/showunsatisfied", method = RequestMethod.GET)
+    public String showUnsatisfiedOrders(Model md){
+        md.addAttribute("unsatisfied", unsatisfiedOrderRepository.findAll());
+        return "unsatisfied";
+    }
+
     @PostMapping(value = "/deletesupplies")
     public String deleteSupplies () {
         supplyRepository.deleteAll();
+        return "uploadForm";
+    }
+
+    @PostMapping(value = "/deleteunsatisfied")
+    public String deleteUnsatisfiedOrders () {
+        unsatisfiedOrderRepository.deleteAll();
         return "uploadForm";
     }
 }

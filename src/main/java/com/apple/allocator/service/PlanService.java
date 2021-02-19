@@ -35,7 +35,7 @@ public class PlanService {
     private List<Plan> plans = new ArrayList<>();
     private List<UnsatisfiedOrder> unsatisfiedOrders = new ArrayList<>();
     private String lastCustomer;
-    private String lastProduct;
+    private int lastOrderId;
 
     @Autowired
     SourcingRuleService sourcingRuleService;
@@ -56,35 +56,44 @@ public class PlanService {
             System.out.println("demandOrderService.getNonZeroDemandOrderSize(): " + demandOrderService.getNonZeroDemandOrderSize());
             Iterable<DemandOrder> oldestOrders = demandOrderService.getOldestDemandOrders();
 
-            for (DemandOrder demandOrder : oldestOrders) {
-
+            Iterator orderIter = oldestOrders.iterator();
+            while (orderIter.hasNext()) {
+                DemandOrder demandOrder = (DemandOrder) orderIter.next();
                 String currentCustomer = demandOrder.getCustomer();
                 String currentProduct = demandOrder.getProduct();
                 java.sql.Date currentDate = demandOrder.getDate();
                 BigInteger currentQuantity = demandOrder.getQuantity();
                 int orderId = demandOrderService.getIdByQuantityCustomerProductAndDate(currentQuantity,currentCustomer,
                         currentProduct,currentDate);
+                // if same order 3 times in a row, push the customer's date back by 3 days
                 if (count > 2) {
-                    // if same customer 3 times in a row, push the customer's date back by 3 days
                     count = 0;
                     java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 3*24*60*60*1000);
                     currentDate = nextDate;
                     demandOrderService.updateDemandOrderDateById(nextDate, orderId);
                     break;
                 }
-                if (currentCustomer.equals(lastCustomer)) {
+                if (orderId == lastOrderId) {
                     count++;
                 } else {
                     count = 0;
                 }
+                lastOrderId = orderId;
+                // switch customer when this order is from the same customer of the last order, unless all latest orders are from this customer;
+                if (currentCustomer.equals(lastCustomer) && ! orderIter.hasNext()) {
+                    lastCustomer = "";
+                    continue;
+                }
+                if (currentCustomer.equals(lastCustomer)) {
+                    continue;
+                }
                 Iterable<String> sites = sourcingRuleService.findSitesByCustomerAndProduct(currentCustomer,
                         currentProduct);
-                Iterator iter = sites.iterator();
-                while (iter.hasNext()) {
-                    String site = (String) iter.next();
+                Iterator siteIter = sites.iterator();
+                while (siteIter.hasNext()) {
+                    String site = (String) siteIter.next();
                     Iterable<Supply> supplies = supplyService.getOldestSupplyBySiteAndProduct(site, currentProduct);
-                    if (supplies == null && ! iter.hasNext()) {
-                        java.sql.Date nextDate = new java.sql.Date(currentDate.getTime() + 24*60*60*1000);
+                    if (supplies == null && ! siteIter.hasNext()) {
                         unsatisfiedOrders.add(new UnsatisfiedOrder(currentCustomer, currentProduct,
                                 currentDate, currentQuantity));
                         demandOrderService.updateDemandOrderQuantityById(BigInteger.ZERO, orderId);
