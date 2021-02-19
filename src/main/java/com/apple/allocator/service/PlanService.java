@@ -33,6 +33,15 @@ public class PlanService {
     }
 
     private List<Plan> plans = new ArrayList<>();
+
+    public List<UnsatisfiedOrder> getUnsatisfiedOrders() {
+        return unsatisfiedOrders;
+    }
+
+    public void setUnsatisfiedOrders(List<UnsatisfiedOrder> unsatisfiedOrders) {
+        this.unsatisfiedOrders = unsatisfiedOrders;
+    }
+
     private List<UnsatisfiedOrder> unsatisfiedOrders = new ArrayList<>();
     private String lastCustomer;
     private int lastOrderId;
@@ -149,7 +158,7 @@ public class PlanService {
     }
 
     public ByteArrayInputStream load() {
-        List<Plan> plans = planRepository.findAll();
+        List<Plan> plans = planRepository.findAllByOrderByDateAsc();
 
         ByteArrayInputStream in = CSVHelper.plansToCSV(plans);
         return in;

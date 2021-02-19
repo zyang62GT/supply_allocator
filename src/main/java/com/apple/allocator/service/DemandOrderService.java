@@ -69,6 +69,6 @@ public class DemandOrderService {
     }
 
     public List<DemandOrder> getAllDemandOrders() {
-        return demandOrderRepository.findAll();
+        return demandOrderRepository.findAllByOrderByDateAsc();
     }
 }

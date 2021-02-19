@@ -7,8 +7,13 @@ import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
 import java.math.BigInteger;
+import java.util.List;
 
 public interface PlanRepository extends JpaRepository<Plan, Integer> {
+
+    List<Plan> findAllByOrderByDateAsc();
+
+
     @Modifying(clearAutomatically = true)
     @Transactional
     @Query(value = "INSERT INTO plan (quantity, site, customer, product, date) VALUES (?1, ?2, ?3, ?4, ?5)",

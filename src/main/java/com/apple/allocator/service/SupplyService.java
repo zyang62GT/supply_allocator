@@ -62,6 +62,6 @@ public class SupplyService {
     }
 
     public List<Supply> getAllSupplies() {
-        return supplyRepository.findAll();
+        return supplyRepository.findAllByOrderByDateAsc();
     }
 }

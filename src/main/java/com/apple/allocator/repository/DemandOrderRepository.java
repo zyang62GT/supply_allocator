@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface DemandOrderRepository extends JpaRepository<DemandOrder, Integer> {
 
+    List<DemandOrder> findAllByOrderByDateAsc();
+
     @Query(value = "select * from demand_order where quantity != 0 order by date limit 1",
             nativeQuery = true)
     Iterable<DemandOrder> findDemandOrderTopDate();

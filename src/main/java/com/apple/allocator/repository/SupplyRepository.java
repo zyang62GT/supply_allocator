@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
 import java.math.BigInteger;
+import java.util.List;
 
 public interface SupplyRepository extends JpaRepository<Supply, Integer> {
+
+    List<Supply> findAllByOrderByDateAsc();
 
     @Query(value="select * from supply where site = ?1 and product = ?2 and quantity != 0 and date = ?3 ;",
             nativeQuery = true)

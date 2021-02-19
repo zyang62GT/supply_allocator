@@ -119,7 +119,7 @@ public class MainController {
         if (planService.getPlans().isEmpty()) {
             planService.allocate();
         }
-        md.addAttribute("plans", planService.getPlans());
+        md.addAttribute("plans", planRepository.findAllByOrderByDateAsc());
         return "plans";
     }
 
@@ -137,7 +137,7 @@ public class MainController {
 
     @RequestMapping(value = "/showdemands", method = RequestMethod.GET)
     public String showDemands(Model md){
-        md.addAttribute("demands", demandOrderRepository.findAll());
+        md.addAttribute("demands", demandOrderRepository.findAllByOrderByDateAsc());
         return "demands";
     }
 
@@ -156,13 +156,13 @@ public class MainController {
 
     @RequestMapping(value = "/showsupplies", method = RequestMethod.GET)
     public String showSupplies(Model md){
-        md.addAttribute("supplies", supplyRepository.findAll());
+        md.addAttribute("supplies", supplyRepository.findAllByOrderByDateAsc());
         return "supplies";
     }
 
     @RequestMapping(value = "/showunsatisfied", method = RequestMethod.GET)
     public String showUnsatisfiedOrders(Model md){
-        md.addAttribute("unsatisfied", unsatisfiedOrderRepository.findAll());
+        md.addAttribute("unsatisfied", unsatisfiedOrderRepository.findAllByOrderByDateAsc());
         return "unsatisfied";
     }
 
@@ -174,6 +174,7 @@ public class MainController {
 
     @PostMapping(value = "/deleteunsatisfied")
     public String deleteUnsatisfiedOrders () {
+        planService.setUnsatisfiedOrders(new ArrayList<>());
         unsatisfiedOrderRepository.deleteAll();
         return "uploadForm";
     }
