@@ -116,7 +116,7 @@ public class MainController {
 
     @RequestMapping(value = "/showplans", method = RequestMethod.GET)
     public String showPlans(Model md){
-        if (planService.getPlans().isEmpty()) {
+        if (planService.getPlans().isEmpty() || demandOrderService.getNonZeroDemandOrderSize() > 0) {
             planService.allocate();
         }
         md.addAttribute("plans", planRepository.findAllByOrderByDateAsc());
